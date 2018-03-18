@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>P/SMF2MML</title>
+  <link rel="stylesheet" href="./bundle.css">
+</head>
+<body>
+  <div class="section bg-dark">
+    <div class="header-box container grid-lg">
+      <h1>P/SMF2MML</h1>
+      <h2>SMF→MML(プチコン3号/BIG用)変換ツール</h2>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="container grid-lg">
+      <app>now loading...</app>
+    </div>
+  </div>
+
+  <div class="section bg-gray">
+    <div class="doc-box container grid-lg">
+      <h3>使い方</h3>
+      <p>書きかけメモです。</p>
+      <ol>
+        <li>
+          「SMF (*.mid,*midi)」と書かれたボタンを押し、変換したいファイルを選ぶ。
+        </li>
+        <li>
+          出力したいトラックの「Output Poly」欄でそのトラックに割り当てるMMLでのチャンネル数を指定する。
+          プチコン3号/BIGの仕様上合計16チャンネルが上限だが、超えていてもMMLの出力は行われる。
+        </li>
+        <li>
+          必要であれば Volume(音量) と Trasnpose(移調)の値を変更し、出力するMMLを調節する。
+        </li>
+        <li>
+          ConvertボタンでMMLを出力し、出力結果を不思議な力でプチコンに送る。
+        </li>
+        <li>
+          プチコン上で再生し、好みに合わせて調節する。
+          曲先頭及び、音色変更時に音量とオクターブが「V100O4」で初期化されるので、その部分を調節すると一括で変更できる。
+          なお出力時にコメントで追加されるticksは、192分音符の数で表した曲の長さ。48(=4分音符のticks数)で割ると拍数に、192(=4/4で全音符のticks数)で割ると4/4での小節数になる。
+        </li>
+        <li>
+          完成:)
+        </li>
+      </ol>
+
+      <h3>仕様・制限</h3>
+      <ul>
+        <li>SMF Format 1、タイムベースがテンポベースのフォーマットのみ対応</li>
+        <li>MMLの出力は16チャンネルを超えていても可能。実機では再生できない(分割・修正すればできなくはない)</li>
+        <li>バランス調節のため曲先頭・音色変更時に「V100O4」で音量・オクターブを指定、それ以外では相対指定で音量・オクターブは調整される。</li>
+        <li>音色変更コマンドは発声直前、音量・デチューンは音が鳴っている間のみ発行される。</li>
+        <li>ピッチベンドは&amp;コマンドと@Dコマンドを組み合わせて再現している。このため余韻部分のピッチベンドは一般的なMIDI音源とは違う挙動になる。</li>
+        <li>モジュレーションは@MOF/@MONのみ発行されるため、MML上で@MPコマンドなどを追加する必要がある。</li>
+      </ul>
+
+      <h3>受け付けるイベント</h3>
+      <ul>
+        <li>CC#1 Modulation (0..63:@MOF, 64..127:@MON に変換)</li>
+        <li>CC#7 Volume</li>
+        <li>CC#10 Panpot</li>
+        <li>CC#11 Expression</li>
+        <li>CC#64 Sustain Pedal (0..63:off,  64..127:on)</li>
+        <li>Pitch Bend</li>
+        <li>Pitch Bend Sensitivity (RPN:00H 00H)</li>
+        <li>Program Change (バンク切り替えは未対応)</li>
+        <li>Set Tempo</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section bg-dark">
+    <div class="footer-box container grid-lg">
+      <div class="columns">
+        <div class="link-list column col-6">
+          <h3>contact</h3>
+          <ul>
+            <li><a href="https://twitter.com/myu314_petitcom">twitter: @myu314_petitcom</a></li>
+            <li><a href="https://github.com/myu314/pismf2mml">github: myu314/pismf2mml</a></li>
+          </ul>
+        </div>
+        <div class="link-list column col-6">
+          <h3>reference</h3>
+          <ul>
+            <li>
+              <a href="http://smilebasic.com/">SmileBASIC</a>
+              (<a href="http://smilebasic.com/en/">en</a>)
+            </li>
+            <li>
+              <a href="http://smilebasic.com/reference/#mml">SmileBASIC Instruction List #MML</a>
+              (<a href="http://smilebasic.com/en/reference/#mml">en</a>)
+            </li>
+            <li><a href="https://www.midi.org/specifications/item/standard-midi-files-smf">Standard MIDI Files (SMF) Specification</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./bundle.js" type="text/javascript"></script>
+</body>
+</html>

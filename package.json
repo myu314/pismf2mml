@@ -1,0 +1,32 @@
+{
+  "name": "pismf2mml",
+  "version": "1.0.0",
+  "description": "SMF to MML(for SmileBASIC) converter.",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --mode development --inline --watch --colors -d --port 3000 --config webpack.dev.js",
+    "build": "webpack --mode production --config webpack.prod.js"
+  },
+  "author": "myu314",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.4",
+    "babel-preset-es2015-riot": "^1.1.0",
+    "css-loader": "^0.28.11",
+    "mini-css-extract-plugin": "^0.2.0",
+    "node-sass": "^4.7.2",
+    "riot-compiler": "^3.4.0",
+    "riot-tag-loader": "^2.0.2",
+    "sass-loader": "^6.0.7",
+    "style-loader": "^0.20.3",
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.12",
+    "webpack-dev-server": "^3.1.1"
+  },
+  "dependencies": {
+    "encoding-japanese": "^1.0.28",
+    "riot": "^3.9.0",
+    "spectre.css": "^0.5.1"
+  }
+}
