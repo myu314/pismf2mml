@@ -24,18 +24,17 @@ function keyToMML(key) {
 
 class MMLChannel {
   constructor(volumeRate, pitchShift) {
-    const topNote = {
+    this._notes = [{
       type      : 'rest',
       length    : 0,
       tempo     : 120,
       program   : 0,
       detune    : 0,
       key       : 0,
-      volume    : 127,
+      volume    : 100,
       panpot    : 64,
       modulation: false,
-    }
-    this._notes = [ topNote, Object.assign({}, topNote) ];
+    }];
     this._key       = 0;
     this._velocity  = 127;
     this._exVolume  = 1;
@@ -47,26 +46,40 @@ class MMLChannel {
 
   render() {
     const topNote = this._notes[0];
-    let prevProgram = topNote.program;
-    let prevDetune = topNote.detune;
-    let prevVolume = topNote.volume;
+    let prevProgram = 0;
+    let prevDetune = 0;
+    let prevVolume = 100;
+    let prevTempo = 120;
+    let prevPanpot = 64;
+    let prevModulation = false;
     let prevOctave = 4;
-    let mml = '';
-    for (let i = 1; i < this._notes.length; i++) {
-      const prev = this._notes[i - 1];
+    let loop = false;
+    let mml = `O${prevOctave}V${prevVolume}`;
+    for (let i = 0; i < this._notes.length; i++) {
       const curr = this._notes[i];
       const next = this._notes[i + 1];
-      if (curr.tempo !== prev.tempo) {
+      if (!loop && curr.loop) {
+        loop = true;
+        mml += `[@${curr.program}P${curr.panpot}${curr.modulation ? '@MON' : '@MOF'}@D${curr.detune}`;
+        prevProgram = curr.program;
+        prevPanpot = curr.panpot;
+        prevModulation = curr.modulation;
+        prevDetune = curr.detune;
+      }
+      if (curr.tempo !== prevTempo) {
         mml += `T${curr.tempo}`;
+        prevTempo = curr.tempo;
       }
       if (curr.length === 0) { // for tempo track
         break;
       }
-      if (curr.panpot !== prev.panpot) {
+      if (curr.panpot !== prevPanpot) {
         mml += `P${curr.panpot}`;
+        prevPanpot = curr.panpot;
       }
-      if (curr.modulation !== prev.modulation) {
+      if (curr.modulation !== prevModulation) {
         mml += curr.modulation ? '@MON' : '@MOF';
+        prevModulation = curr.modulation;
       }
       if (curr.type === 'rest') {
         const len = ticksToMMLLength(curr.length);
@@ -102,6 +115,9 @@ class MMLChannel {
           mml += '&';
         }
       }
+    }
+    if (loop) {
+      mml += ']';
     }
     return mml;
   }
@@ -160,6 +176,10 @@ class MMLChannel {
     this._setParameter({ tempo: Math.min(512, Math.max(1, tempo)) });
   }
 
+  loopStart() {
+    this._setParameter({ loop: true });
+  }
+
   get _currentNote() {
     return this._notes[this._notes.length - 1];
   }
@@ -170,12 +190,13 @@ class MMLChannel {
       return Object.assign(currentNote, param);
     }
     for (const [k, v] of Object.entries(param)) {
-      if (v == currentNote[k]) {
+      if (v === currentNote[k]) {
         continue;
       }
       const newNote = Object.assign({}, currentNote);
       this._notes.push(newNote);
       newNote.length = 0;
+      delete newNote.loop;
       if (newNote.type === 'note') {
         newNote.type = 'tie';
       }

@@ -15,6 +15,7 @@ class EventFilter {
     this._rpnLSB = 127;
     this._rpnMSB = 127;
     this._range = 2;
+    this._bank = 0;
   }
 
   next() {
@@ -78,6 +79,9 @@ class EventFilter {
                 panpot  : event.value
               });
               break;
+            case 0x20:  // bank(LSB)
+              this._bank = event.value;
+              break;
             case 0x40:  // pedal
               this._pedal = (event.value >= 0x40);
               if (this._pedal == false) {
@@ -106,12 +110,15 @@ class EventFilter {
               this._rpnSelect = true;
               this._rpnMSB = event.value;
               break;
+            case 0x6f:  // CC#111 Loop start
+              outputs.push({ type  : 'loopstart' });
+              break;
           }
           break;
         case TinySMF.Type.PROGRAM_CHANGE:
           outputs.push({
             type    : 'program',
-            program : event.program,
+            program : ((this._bank << 7) | event.program) & 0x1ff,
           });
           break;
         case TinySMF.Type.PITCH_BEND:

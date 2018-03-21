@@ -68,6 +68,11 @@ class EventDispatcher {
         case 'tempo':
           this._channels[0].mml.tempo(event.tempo);
           break;
+        case 'loopstart':
+          for (const ch of this._channels) {
+            ch.mml.loopStart();
+          }
+          break;
       }
     }
   }

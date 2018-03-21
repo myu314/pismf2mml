@@ -190,7 +190,7 @@
         this.output = null;
         return;
       }
-      output += 'DATA -1\n';
+      output += 'DATA 0\n';
       this.output = `CLS
 BGMSETD 128,@MMLDATA: BGMPLAY 128
 REPEAT: WAIT: UNTIL BUTTON()
