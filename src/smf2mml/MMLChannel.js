@@ -1,8 +1,5 @@
 const ticksToMMLLength = require('./ticksToMMLLength.js');
 
-const DEFAULT_VOLUME=100
-const DEFAULT_OCTAVE=4
-
 function keyToMML(key) {
   const KEY_NAME = [
     "C","C#","D","D#","E","F","F#","G","G#","A","A#","B"
@@ -26,7 +23,7 @@ function keyToMML(key) {
 }
 
 class MMLChannel {
-  constructor() {
+  constructor(volumeRate, pitchShift) {
     const topNote = {
       type      : 'rest',
       length    : 0,
@@ -34,7 +31,7 @@ class MMLChannel {
       program   : 0,
       detune    : 0,
       key       : 0,
-      volume    : DEFAULT_VOLUME,
+      volume    : 127,
       panpot    : 64,
       modulation: false,
     }
@@ -44,16 +41,17 @@ class MMLChannel {
     this._exVolume  = 1;
     this._pitch     = 0;
     this._program   = 0;
+    this._volumeRate = volumeRate;
+    this._pitchShift = pitchShift;
   }
 
   render() {
-    const reset = `V${DEFAULT_VOLUME}O${DEFAULT_OCTAVE} `;
     const topNote = this._notes[0];
     let prevProgram = topNote.program;
     let prevDetune = topNote.detune;
     let prevVolume = topNote.volume;
-    let prevOctave = DEFAULT_OCTAVE;
-    let mml = reset;
+    let prevOctave = 4;
+    let mml = '';
     for (let i = 1; i < this._notes.length; i++) {
       const prev = this._notes[i - 1];
       const curr = this._notes[i];
@@ -77,10 +75,8 @@ class MMLChannel {
         }).join('');
       } else {
         if (curr.type === 'note' && curr.program != prevProgram) {
-          mml += `@${curr.program}${reset}`;
+          mml += `@${curr.program}`;
           prevProgram = curr.program;
-          prevVolume = DEFAULT_VOLUME;
-          prevOctave = DEFAULT_OCTAVE;
         }
         if (curr.volume != prevVolume) {
           const d = curr.volume - prevVolume;
@@ -120,14 +116,16 @@ class MMLChannel {
 
   noteOn(key, velocity) {
     this._key = key;
-    this._velocity = velocity;
+    this._velocity = velocity * this._volumeRate;
     this.noteOff();
     this._setParameter(Object.assign(
       {
         type: 'note',
         volume: this._currentVolume,
         program: this._program,
-      }, this._currentKey));
+      },
+      this._currentKey
+    ));
   }
 
   pitch(value) {
@@ -192,7 +190,7 @@ class MMLChannel {
 
   get _currentKey() {
     const pitch = Math.min((128 << 6) - 1, Math.max(0,
-      (this._key << 6) + this._pitch
+      (this._key << 6) + this._pitch + this._pitchShift
     ));
     return { detune: pitch & 0x3f, key: pitch >> 6 };
   }

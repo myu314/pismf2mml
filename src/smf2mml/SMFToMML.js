@@ -53,14 +53,15 @@ class SMFToMML {
     return this._title;
   }
 
-  convert(trackNumber, numChannels, withTempo, volume = 1, transpose = 0) {
+  convert(trackNumber, numChannels, withTempo, volume, transpose, detune) {
     const iTPQN = this._tpqn;
     const oTPQN = 48;
     const srcTempo = new EventFilter(
       withTempo ? this._tempoTrack : [], iTPQN, oTPQN);
     const srcTarget = new EventFilter(
-      this._tracks[trackNumber], iTPQN, oTPQN, volume, transpose);
-    const dispatcher = new EventDispatcher(numChannels);
+      this._tracks[trackNumber], iTPQN, oTPQN);
+    const dispatcher = new EventDispatcher(
+      numChannels, volume, transpose * 64 + detune);
     let ticks = 0;
     while (true) {
       dispatcher.dispatch(srcTempo.next());

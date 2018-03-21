@@ -36,6 +36,7 @@
         <th>MaxPoly</th>
         <th>Volume<span class="text-gray">(%)</span></th>
         <th>Transpose</th>
+        <th>Detune</th>
         <th>
           Output Poly
           <span class="badge" data-badge={ totalPoly }></span>
@@ -47,6 +48,7 @@
           <td>{ maxPoly }</td>
           <td><input class="int-value" type="text" onchange={ onChangeVolume } value={ volume }></td>
           <td><input class="int-value" type="text" onchange={ onChangeTranspose } value={ transpose }></td>
+          <td><input class="int-value" type="text" onchange={ onChangeDetune } value={ detune }></td>
           <td><input class="int-value" type="text" onchange={ onChangeOutputPoly } value={ outputPoly }></td>
         </tr>
       </tbody>
@@ -97,11 +99,19 @@
       e.item.volume = (v === NaN) ? 100 : v;
       e.target.value = e.item.volume;
     };
+
     this.onChangeTranspose = (e) => {
       const v = Math.min(24, Math.max(-24, e.target.value |0));
       e.item.transpose = (v === NaN) ? 0 : v;
       e.target.value = e.item.transpose;
     };
+
+    this.onChangeDetune = (e) => {
+      const v = Math.min(64, Math.max(-64, e.target.value |0));
+      e.item.detune = (v === NaN) ? 0 : v;
+      e.target.value = e.item.detune;
+    };
+
     this.onChangeOutputPoly = (e) => {
       const v = Math.min(16, Math.max(0, e.target.value |0));
       e.item.outputPoly = (v === NaN) ? 0 : v;
@@ -127,6 +137,7 @@
             maxPoly   : track.maxPoly,
             volume    : 100,
             transpose : 0,
+            detune    : 0,
             outputPoly: Math.min(8, track.maxPoly)
           };
           trackInfo.push(info);
@@ -166,8 +177,7 @@
         if (info.outputPoly <= 0) {
           continue;
         }
-        const result = this.converter.convert(
-          i, info.outputPoly, tempo, info.volume / 100, info.transpose);
+        const result = this.converter.convert(i, info.outputPoly, tempo, info.volume / 100, info.transpose, info.detune);
         tempo = false;
         output += `'[${info.name}] ${result.ticks} ticks\n`;
         for (const mml of result.mml) {

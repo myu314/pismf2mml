@@ -1,12 +1,12 @@
 const MMLChannel = require('./MMLChannel.js');
 
 class EventDispatcher {
-  constructor(numChannels) {
+  constructor(numChannels, volume, pitch) {
     this._timestamp = 0;
     this._channels = [];
     for (; numChannels > 0; numChannels--) {
       this._channels.push({
-        mml: new MMLChannel(),
+        mml: new MMLChannel(volume, pitch),
         note: null,
         timestamp: null,
       });
