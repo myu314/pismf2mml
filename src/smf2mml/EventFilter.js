@@ -1,15 +1,12 @@
 const TinySMF = require('./TinySMF.js');
 
 class EventFilter {
-  constructor(source, inputTPQN, outputTPQN, 
-    masterVolume = 1, transpose = 0) {
+  constructor(source, inputTPQN, outputTPQN) {
     this._source = source;
     this._index = 0;
     this._count = 0;
     this._inputTPQN = inputTPQN;
     this._outputTPQN = outputTPQN;
-    this._masterVolume = masterVolume;
-    this._transpose = transpose;
     this._notes = [];
     this._pedal = false;
     this._volume = 1;
@@ -18,6 +15,7 @@ class EventFilter {
     this._rpnLSB = 127;
     this._rpnMSB = 127;
     this._range = 2;
+    this._bank = 0;
   }
 
   next() {
@@ -31,7 +29,7 @@ class EventFilter {
       }
       switch (event.type) {
         case TinySMF.Type.NOTE_OFF: {
-          let key = event.key + this._transpose;
+          let key = event.key;
           for (const note of this._notes) {
             if (!note.noteoff && note.key == key) {
               note.noteoff = true;
@@ -46,8 +44,8 @@ class EventFilter {
         case TinySMF.Type.NOTE_ON: {
           const note = {
             type      : 'note',
-            key       : event.key + this._transpose,
-            velocity  : event.velocity * this._masterVolume |0,
+            key       : event.key,
+            velocity  : event.velocity |0,
             noteoff   : false,
             playing   : true,
           };
@@ -81,6 +79,9 @@ class EventFilter {
                 panpot  : event.value
               });
               break;
+            case 0x20:  // bank(LSB)
+              this._bank = event.value;
+              break;
             case 0x40:  // pedal
               this._pedal = (event.value >= 0x40);
               if (this._pedal == false) {
@@ -109,12 +110,15 @@ class EventFilter {
               this._rpnSelect = true;
               this._rpnMSB = event.value;
               break;
+            case 0x6f:  // CC#111 Loop start
+              outputs.push({ type  : 'loopstart' });
+              break;
           }
           break;
         case TinySMF.Type.PROGRAM_CHANGE:
           outputs.push({
             type    : 'program',
-            program : event.program,
+            program : ((this._bank << 7) | event.program) & 0x1ff,
           });
           break;
         case TinySMF.Type.PITCH_BEND:
